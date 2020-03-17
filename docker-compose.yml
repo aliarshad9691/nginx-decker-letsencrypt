@@ -1,0 +1,33 @@
+version: '2'
+
+services:
+  nginx:
+    image: jwilder/nginx-proxy
+    ports:
+          - '80:80'
+          - '443:443'
+    volumes:
+      - ./conf:/etc/nginx/conf.d
+      - ./certs:/etc/nginx/certs:ro
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      - DHPARAM_GENERATION=false
+    restart: unless-stopped
+    mem_limit: 512M
+    network_mode: bridge
+    container_name: nginx-proxy
+  letsEncrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes_from:
+      - nginx
+    volumes:
+      - ./certs:/etc/nginx/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DEFAULT_EMAIL=email@aliarshad.info
+    restart: unless-stopped
+    mem_limit: 512M
+    network_mode: bridge
+    container_name: letsencrypt-nginx-proxy-companion
